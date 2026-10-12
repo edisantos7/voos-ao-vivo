@@ -53,6 +53,17 @@ if (process.env.OPENSKY_CLIENT_ID && process.env.OPENSKY_CLIENT_SECRET) {
   }
 }
 
+// Quando um pedido falha antes de haver resposta (sem internet, servidor que não
+// responde, etc.), o Node só diz "fetch failed". Esta função junta o motivo real
+// (ex.: ETIMEDOUT = tempo esgotado, ECONNREFUSED = ligação recusada,
+// ENOTFOUND = endereço não encontrado) e em que passo aconteceu.
+function explicarFalha(passo, erro) {
+  const causa = erro.name === "TimeoutError"
+    ? "tempo esgotado (mais de 30 s sem resposta)"
+    : (erro.cause && (erro.cause.code || erro.cause.message)) || erro.message;
+  return new Error(passo + ": " + causa);
+}
+
 // Token de acesso (só usado se houver credenciais). Dura cerca de 30 minutos.
 let token = null;
 let tokenExpira = 0;
@@ -60,16 +71,22 @@ let tokenExpira = 0;
 async function obterToken() {
   if (!credenciais) return null;
   if (token && Date.now() < tokenExpira) return token; // ainda é válido
-  const resposta = await fetch(URL_TOKEN, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "client_credentials",
-      client_id: credenciais.clientId,
-      client_secret: credenciais.clientSecret,
-    }),
-  });
-  if (!resposta.ok) throw new Error("As credenciais em config.json foram recusadas pela OpenSky.");
+  let resposta;
+  try {
+    resposta = await fetch(URL_TOKEN, {
+      signal: AbortSignal.timeout(30 * 1000), // desistir ao fim de 30 s
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "client_credentials",
+        client_id: credenciais.clientId,
+        client_secret: credenciais.clientSecret,
+      }),
+    });
+  } catch (erro) {
+    throw explicarFalha("Pedido do token à OpenSky", erro);
+  }
+  if (!resposta.ok) throw new Error("A OpenSky recusou as credenciais (código " + resposta.status + "). Confirma o client id e o client secret.");
   const dados = await resposta.json();
   token = dados.access_token;
   tokenExpira = Date.now() + (dados.expires_in - 60) * 1000; // renovamos 1 minuto antes
@@ -87,7 +104,12 @@ async function pedirVoos() {
   const t = await obterToken();
   if (t) cabecalhos.Authorization = "Bearer " + t;
 
-  const resposta = await fetch(URL_OPENSKY, { headers: cabecalhos });
+  let resposta;
+  try {
+    resposta = await fetch(URL_OPENSKY, { headers: cabecalhos, signal: AbortSignal.timeout(30 * 1000) });
+  } catch (erro) {
+    throw explicarFalha("Pedido dos voos à OpenSky", erro);
+  }
   const restantes = resposta.headers.get("x-rate-limit-remaining");
 
   if (resposta.status === 429) {
@@ -146,6 +168,7 @@ const servidor = http.createServer(async (req, res) => {
       res.end(r.corpo);
     } catch (erro) {
       // Sem internet, OpenSky em baixo, credenciais erradas, etc.
+      console.error("Erro ao obter os voos:", erro.message); // aparece nos registos (Logs)
       res.writeHead(502, { "Content-Type": "application/json; charset=utf-8" });
       res.end(JSON.stringify({ erro: "ligacao", mensagem: erro.message }));
     }

@@ -255,7 +255,9 @@ async function atualizarVoos() {
       );
     } else if (!resposta.ok) {
       if (dados.erro === "ligacao") {
-        mostrarAviso("O servidor local não conseguiu falar com a OpenSky. Confirma a ligação à internet. Volto a tentar daqui a 30 s.");
+        // dados.mensagem traz o motivo técnico (útil para perceber o problema)
+        mostrarAviso("O servidor não conseguiu falar com a OpenSky. Volto a tentar daqui a 30 s." +
+          (dados.mensagem ? ` (Detalhe: ${dados.mensagem})` : ""));
       } else {
         mostrarAviso(`A OpenSky não respondeu como esperado (código ${dados.codigo || resposta.status}). Volto a tentar daqui a 30 s.`);
       }
