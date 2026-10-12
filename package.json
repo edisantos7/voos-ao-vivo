@@ -1,0 +1,12 @@
+{
+  "name": "voos-ao-vivo",
+  "version": "1.0.0",
+  "description": "Mapa interativo com os aviões que estão a voar neste momento no mundo inteiro.",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

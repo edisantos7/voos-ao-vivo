@@ -80,4 +80,28 @@ O `config.json` está no `.gitignore`, por isso as tuas credenciais nunca vão p
 O projeto já é um repositório git com um primeiro commit. No GitHub Desktop:
 **File → Add local repository…**, escolhe esta pasta e carrega em **Publish repository**.
 
-Nota: o GitHub Pages só serve ficheiros estáticos e não corre o `server.js`. Para outras pessoas usarem o mapa, têm de o correr no computador delas, ou terás de alojar o servidor num serviço que corra Node.js (por exemplo Render ou Railway).
+Nota: o GitHub Pages só serve ficheiros estáticos e não corre o `server.js`. Para teres um link que qualquer pessoa abre, usa o Render (secção seguinte).
+
+## Pôr online no Render (grátis)
+
+Assim tens um link do tipo `https://voos-ao-vivo.onrender.com` para mandar a quem quiseres.
+
+1. Publica o projeto no GitHub (secção anterior).
+2. Cria uma conta em [render.com](https://render.com) (podes entrar com a conta do GitHub).
+3. Carrega em **New → Web Service** e escolhe o repositório `voos-ao-vivo`.
+4. Preenche:
+   - **Language / Runtime:** Node
+   - **Build Command:** deixa vazio (ou `npm install`, que não instala nada)
+   - **Start Command:** `node server.js`
+   - **Instance Type:** Free
+5. Em **Environment Variables**, adiciona as tuas credenciais da OpenSky (muito recomendado):
+   - `OPENSKY_CLIENT_ID` = o teu client id
+   - `OPENSKY_CLIENT_SECRET` = o teu client secret
+6. Carrega em **Deploy Web Service**. Ao fim de um ou dois minutos o Render mostra o link no topo da página.
+
+Coisas a saber:
+
+- **Os pedidos são partilhados.** Todas as pessoas que abrem o link usam o mesmo servidor, por isso gastam os mesmos créditos da OpenSky. O servidor reaproveita cada resposta durante 20 segundos, o que quer dizer que 1 ou 20 pessoas a ver gastam o mesmo. Sem conta, os créditos acabam em cerca de meia hora de uso; com conta duram umas 5 a 6 horas de uso contínuo por dia.
+- **O site adormece.** No plano grátis, depois de uns 15 minutos sem visitas o Render desliga o servidor. A visita seguinte demora 30 a 60 segundos a carregar.
+- **Atualizar o site:** sempre que fizeres *Push* no GitHub Desktop, o Render publica a nova versão sozinho.
+- Se o mapa mostrar erros da OpenSky no Render mas funcionar no teu computador, confirma as variáveis de ambiente do passo 5.
