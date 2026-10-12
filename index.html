@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Voos ao vivo</title>
+
+  <!-- Leaflet: a biblioteca que desenha o mapa (CSS + JavaScript) -->
+  <!-- (vem da internet, por isso o projeto precisa de ligação) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- O nosso estilo -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ===== Barra do topo ===== -->
+  <header class="barra">
+    <div class="marca">
+      <span class="logo" aria-hidden="true">✈</span>
+      <span>Voos ao vivo</span>
+    </div>
+
+    <div class="contador">
+      <strong id="total">—</strong>
+      <span>aviões no ar</span>
+    </div>
+
+    <div class="estado" id="estado">A carregar…</div>
+
+    <form class="pesquisa" id="pesquisa" role="search">
+      <label for="caixa-pesquisa" class="escondido">Procurar voo pelo callsign</label>
+      <input id="caixa-pesquisa" type="search" placeholder="Procurar voo, ex.: TAP123" autocomplete="off" spellcheck="false">
+      <button type="submit">Procurar</button>
+    </form>
+  </header>
+
+  <!-- Mensagens de aviso ou erro aparecem aqui -->
+  <div class="aviso" id="aviso" hidden></div>
+
+  <!-- ===== O mapa ===== -->
+  <div id="mapa"></div>
+
+  <!-- Legenda das cores (altitude) -->
+  <div class="legenda" aria-label="Legenda das cores por altitude">
+    <span class="legenda-titulo">Altitude</span>
+    <span><i style="background:#7ee081"></i>&lt; 3 km</span>
+    <span><i style="background:#f4d35e"></i>3–7 km</span>
+    <span><i style="background:#f79b4b"></i>7–10 km</span>
+    <span><i style="background:#f25f8c"></i>&gt; 10 km</span>
+  </div>
+
+  <!-- ===== Painel lateral com os dados do voo ===== -->
+  <aside class="painel" id="painel" hidden aria-live="polite">
+    <button class="fechar" id="fechar" type="button" aria-label="Fechar painel">×</button>
+
+    <div class="painel-topo">
+      <div class="callsign" id="p-callsign">—</div>
+      <div class="pais" id="p-pais">—</div>
+      <div class="companhia" id="p-companhia"></div>
+    </div>
+
+    <!-- Rota: origem → destino -->
+    <section class="rota">
+      <div class="aeroporto">
+        <div class="rotulo">Origem</div>
+        <div class="codigo" id="p-orig-codigo">…</div>
+        <div class="nome" id="p-orig-nome"></div>
+      </div>
+      <div class="seta" aria-hidden="true">→</div>
+      <div class="aeroporto">
+        <div class="rotulo">Destino</div>
+        <div class="codigo" id="p-dest-codigo">…</div>
+        <div class="nome" id="p-dest-nome"></div>
+      </div>
+    </section>
+    <button class="botao-rota" id="ver-rota" type="button" hidden>Ver a rota inteira no mapa</button>
+
+    <!-- Dados de voo -->
+    <dl class="dados">
+      <div><dt>Altitude</dt><dd id="p-altitude">—</dd></div>
+      <div><dt>Velocidade</dt><dd id="p-velocidade">—</dd></div>
+      <div><dt>Direção</dt><dd id="p-direcao">—</dd></div>
+      <div><dt>Fase do voo</dt><dd id="p-fase">—</dd></div>
+      <div><dt>Última atualização</dt><dd id="p-hora">—</dd></div>
+      <div><dt>Código ICAO24</dt><dd id="p-icao">—</dd></div>
+    </dl>
+
+    <p class="nota">
+      A rota vem de uma base de dados de rotas habituais (adsbdb) e pode não estar 100% certa.
+      Posições: OpenSky Network.
+    </p>
+  </aside>
+
+  <!-- O nosso código -->
+  <script src="app.js"></script>
+</body>
+</html>

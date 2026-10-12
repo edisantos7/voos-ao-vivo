@@ -1,0 +1,6 @@
+# As tuas credenciais da OpenSky: nunca devem ir para o GitHub
+config.json
+
+# Ficheiros do sistema
+.DS_Store
+Thumbs.db
